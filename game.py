@@ -2,19 +2,22 @@ import json
 import arcade
 from pyglet import gl
 from arcade.hitbox import SimpleHitBoxAlgorithm
+import random
 
-# ко
+# константы-поверхности
 SURFACE_FLOOR = 0
 SURFACE_RIGHT = 90
 SURFACE_CEILING = 180
 SURFACE_LEFT = 270
 SURFACE_AIR = -1
 
+# константы клеточного поля
 BASE_TILE_SIZE = 64
 GLOBAL_SCALE = 0.5
 TILE_SIZE = BASE_TILE_SIZE * GLOBAL_SCALE
 
 
+# класс игрока
 class SnailPlayer(arcade.Sprite):
     def __init__(self, textures_right, textures_left, scale):
         super().__init__(textures_right[0], scale=scale)
@@ -22,10 +25,12 @@ class SnailPlayer(arcade.Sprite):
         self.textures_right = textures_right
         self.textures_left = textures_left
 
+        # настройка анимации
         self.current_texture_index = 0
         self.time_since_last_frame = 0
         self.animation_speed = 0.15
 
+        # настройка перемещения
         self.move_speed = 4
         self.jump_force = 9
         self.gravity = 0.4
@@ -36,6 +41,7 @@ class SnailPlayer(arcade.Sprite):
 
         self.was_in_air = False
 
+    # логика перемещения
     def update_movement(self, blocks_list, keys_pressed, particle_system):
         check_dist = 4
 
@@ -157,6 +163,7 @@ class SnailPlayer(arcade.Sprite):
             if self.surface_state == SURFACE_AIR:
                 self.vel_y = 0
 
+    # метод, вызываемый для прыжка или отскока от поверхности
     def jump(self):
         if self.surface_state == SURFACE_FLOOR:
             self.vel_y = self.jump_force
@@ -173,6 +180,7 @@ class SnailPlayer(arcade.Sprite):
             self.vel_y = self.jump_force * 0.7
             self.surface_state = SURFACE_AIR
 
+    # проверка соприкосновение с поверхностью
     def check_collision_offset(self, blocks_list, offset_x, offset_y):
         self.center_x += offset_x
         self.center_y += offset_y
@@ -182,6 +190,7 @@ class SnailPlayer(arcade.Sprite):
         return len(hit) > 0
 
 
+# Класс системы частиц
 class ParticleSystem:
     def __init__(self):
         self.particles = arcade.SpriteList()
@@ -192,7 +201,6 @@ class ParticleSystem:
             particle.center_x = x
             particle.center_y = y
 
-            import random
             if surface_state == SURFACE_FLOOR:
                 particle.change_x = random.uniform(-2, 2)
                 particle.change_y = random.uniform(0.5, 2)
@@ -221,6 +229,7 @@ class ParticleSystem:
         self.particles.draw()
 
 
+# класс игрового процесса
 class GameLevel(arcade.View):
     def __init__(self, level_id, game_progress, return_to_menu_callback):
         super().__init__()
@@ -240,11 +249,13 @@ class GameLevel(arcade.View):
         self.gui_camera = arcade.camera.Camera2D(arcade.LBWH(0, 0, self.window.width, self.window.height))
         self.particle_system = ParticleSystem()
 
+        # подгрузка звуков
         self.sound_banana = arcade.load_sound("assets/sounds/banana.mp3")
         self.sound_key = arcade.load_sound("assets/sounds/key.mp3")
         self.sound_door_open = arcade.load_sound("assets/sounds/door_open.mp3")
         self.sound_locked = arcade.load_sound("assets/sounds/locked.mp3")
 
+        # лейбл с названием уровня в углу
         self.level_title_text = arcade.Text(
             text=f"{self.level_data['name'].upper()}",
             x=20,
@@ -254,11 +265,13 @@ class GameLevel(arcade.View):
             bold=True
         )
 
+    # при открытии уровня
     def on_show_view(self):
         arcade.set_background_color(arcade.color.CORNFLOWER_BLUE)
 
         hb_algorithm = SimpleHitBoxAlgorithm()
 
+        # подгрузка текстур
         crate_texture = arcade.load_texture("assets/images/box.png", hit_box_algorithm=hb_algorithm)
         crate_texture.image.texture_filter = gl.GL_NEAREST
 
@@ -306,6 +319,7 @@ class GameLevel(arcade.View):
         textures_right = [snail_r1, snail_r2]
         textures_left = [snail_l1, snail_l2]
 
+        # выстраивание уровня
         for layer in map_data["layers"]:
             if layer["name"] == "blocks" and layer["type"] == "tilelayer":
                 data = layer["data"]
@@ -376,6 +390,7 @@ class GameLevel(arcade.View):
         self.scene.add_sprite("player", self.player_sprite)
         self.level_title_text.y = self.window.height - 40
 
+    # перемещение камеры к игроку
     def scroll_to_player(self):
         if not self.player_sprite:
             return
@@ -383,9 +398,9 @@ class GameLevel(arcade.View):
         target_x = self.player_sprite.center_x
         target_y = self.player_sprite.center_y
 
-        camera_position = (target_x, target_y)
-        self.camera.position = camera_position
+        self.camera.position = (target_x, target_y)
 
+    # обработка ввода
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
             self.return_to_menu_callback()
@@ -402,6 +417,7 @@ class GameLevel(arcade.View):
         self.keys_pressed[key] = False
 
     def on_update(self, delta_time):
+        # задержка перед окончанием уровня
         if self.level_complete_timer > 0:
             self.level_complete_timer -= delta_time
             if self.level_complete_timer <= 0:
@@ -418,6 +434,7 @@ class GameLevel(arcade.View):
         self.particle_system.update()
         self.scroll_to_player()
 
+        # проверка на коллизии (подбор предметов, взаимодействие с дверью)
         if self.scene and self.player_sprite:
             try:
                 objects = self.scene.get_sprite_list("objects")
@@ -446,6 +463,7 @@ class GameLevel(arcade.View):
             except KeyError:
                 pass
 
+    # отрисовка игровой сцены
     def on_draw(self):
         self.clear()
 
