@@ -3,6 +3,7 @@ import arcade
 from pyglet import gl
 from arcade.hitbox import SimpleHitBoxAlgorithm
 
+# ко
 SURFACE_FLOOR = 0
 SURFACE_RIGHT = 90
 SURFACE_CEILING = 180

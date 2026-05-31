@@ -4,10 +4,12 @@ import arcade
 import arcade.gui
 from game import GameLevel
 
+# константы настройки экрана
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Banana Snail"
 
+# стандартный прогресс на случай, если файл сохранения не найден
 DEFAULT_PROGRESS = {
     "level_1": {"name": "Уровень 1", "collected": "000", "passed": False},
     "level_2": {"name": "Уровень 2", "collected": "000", "passed": False},
@@ -15,6 +17,7 @@ DEFAULT_PROGRESS = {
 }
 
 
+# загрузка прогресса
 def load_progress():
     if os.path.exists("save.json"):
         try:
@@ -25,6 +28,7 @@ def load_progress():
     return DEFAULT_PROGRESS
 
 
+# сохранение прогресса
 def save_progress(progress):
     with open("save.json", "w", encoding="utf-8") as f:
         json.dump(progress, f, ensure_ascii=False, indent=4)
@@ -33,6 +37,7 @@ def save_progress(progress):
 GAME_PROGRESS = load_progress()
 
 
+# класс кнопки меню
 class MultilineButton(arcade.gui.UIFlatButton):
     def __init__(self, **kwargs):
         display_text = kwargs.pop("text", "")
@@ -54,6 +59,7 @@ class MultilineButton(arcade.gui.UIFlatButton):
         self.add(layout)
 
 
+# класс игрового меню
 class MainMenu(arcade.View):
     def __init__(self):
         super().__init__()
@@ -70,8 +76,9 @@ class MainMenu(arcade.View):
         )
         self.v_box.add(title_label)
 
-        is_grand_prix = all(lvl["collected"] == "111" and lvl["passed"] for lvl in GAME_PROGRESS.values())
-        if is_grand_prix:
+        # если игрок собрал награды на всех уровнях, то показываем текст поздравления
+        all_collected = all(lvl["collected"] == "111" and lvl["passed"] for lvl in GAME_PROGRESS.values())
+        if all_collected:
             trophy_label = arcade.gui.UILabel(
                 text="ВСЕ БАНАНЫ СОБРАНЫ!",
                 font_size=16,
@@ -89,6 +96,7 @@ class MainMenu(arcade.View):
             "press": {"font_name": "Arial", "font_size": 14}
         }
 
+        # инициализация кнопок меню
         for lvl_id, data in GAME_PROGRESS.items():
             complete_text = "" if not data.get("passed") else "".join(
                 ['🍌' if b == '1' else '--' for b in data['collected']])
@@ -131,6 +139,7 @@ class MainMenu(arcade.View):
     def on_hide_view(self):
         self.manager.disable()
 
+    # прорисовка меню
     def on_draw(self):
         self.background_color = arcade.color.DARK_SLATE_GRAY
         self.clear()
@@ -140,6 +149,7 @@ class MainMenu(arcade.View):
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
+    # метод для сохранения при закрытии программы
     def close_and_save():
         save_progress(GAME_PROGRESS)
         arcade.Window.on_close(window)
