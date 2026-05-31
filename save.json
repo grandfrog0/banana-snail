@@ -1,0 +1,17 @@
+{
+    "level_1": {
+        "name": "Уровень 1",
+        "collected": "010",
+        "passed": true
+    },
+    "level_2": {
+        "name": "Уровень 2",
+        "collected": "101",
+        "passed": true
+    },
+    "level_3": {
+        "name": "Уровень 3",
+        "collected": "000",
+        "passed": false
+    }
+}
