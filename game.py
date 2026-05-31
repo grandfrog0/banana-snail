@@ -10,6 +10,10 @@ SURFACE_CEILING = 180
 SURFACE_LEFT = 270
 SURFACE_AIR = -1
 
+BASE_TILE_SIZE = 64
+GLOBAL_SCALE = 0.5
+TILE_SIZE = BASE_TILE_SIZE * GLOBAL_SCALE
+
 
 class SnailPlayer(arcade.Sprite):
     def __init__(self, textures_right, textures_left, scale):
@@ -140,7 +144,8 @@ class SnailPlayer(arcade.Sprite):
                 self.right = block.left
             elif self.vel_x < 0:
                 self.left = block.right
-            if self.surface_state == SURFACE_AIR: self.vel_x = 0
+            if self.surface_state == SURFACE_AIR:
+                self.vel_x = 0
 
         self.center_y += self.vel_y
         hit_y = arcade.check_for_collision_with_list(self, blocks_list)
@@ -149,7 +154,8 @@ class SnailPlayer(arcade.Sprite):
                 self.top = block.bottom
             elif self.vel_y < 0:
                 self.bottom = block.top
-            if self.surface_state == SURFACE_AIR: self.vel_y = 0
+            if self.surface_state == SURFACE_AIR:
+                self.vel_y = 0
 
     def jump(self):
         if self.surface_state == SURFACE_FLOOR:
@@ -250,10 +256,6 @@ class GameLevel(arcade.View):
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.CORNFLOWER_BLUE)
-
-        BASE_TILE_SIZE = 64
-        GLOBAL_SCALE = 0.5
-        TILE_SIZE = BASE_TILE_SIZE * GLOBAL_SCALE
 
         hb_algorithm = SimpleHitBoxAlgorithm()
 

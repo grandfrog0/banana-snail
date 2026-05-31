@@ -123,7 +123,7 @@ class MainMenu(arcade.View):
         self.manager.add(anchor_layout)
 
     def make_click_handler(self, level_id):
-        def on_click(event):
+        def on_click(_):
             game_view = GameLevel(level_id, GAME_PROGRESS, self.return_to_menu)
             self.window.show_view(game_view)
 
